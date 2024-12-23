@@ -15,5 +15,7 @@ migratedown1:
 		migrate -path db/migrations -database "postgresql://root:secret@localhost:5433/ias_bank?sslmode=disable" -verbose down 1
 sqlc:
 		sqlc generate
+server:
+		go run main.go
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock   
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock   server
