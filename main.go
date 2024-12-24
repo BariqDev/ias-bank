@@ -7,18 +7,23 @@ import (
 
 	"github.com/BariqDev/ias-bank/api"
 	db "github.com/BariqDev/ias-bank/db/sqlc"
+	"github.com/BariqDev/ias-bank/util"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const (
-	dbSource = "postgresql://root:secret@localhost:5433/ias_bank?sslmode=disable"
-	address  = "0.0.0.0:8080"
-)
+
 
 func main() {
 
+	// Load configuration file
+	config,err := util.LoadConfig(".")
 	ctx := context.Background()
-	testDbPool, err := pgxpool.New(ctx, dbSource)
+	if err != nil {
+		log.Fatal("Cannot load config:", err)
+		os.Exit(1)
+	}
+
+	testDbPool, err := pgxpool.New(ctx, config.DBSource)
 
 	if err != nil {
 		log.Fatal("Cannot connect to DB:", err)
@@ -28,7 +33,7 @@ func main() {
 
 	server := api.NewServer(store)
 
-	err = server.Start(address)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("Cannot start server:", err)
 		os.Exit(1)
