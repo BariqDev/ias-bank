@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 
@@ -49,6 +50,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	fmt.Println(req.ID)
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
 
