@@ -1,13 +1,13 @@
 package api
 
 import (
-	"fmt"
+	"errors"
 	"math"
 	"net/http"
-
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type createAccountRequestParams struct {
@@ -31,6 +31,15 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	account, err := server.store.CreateAccount(ctx, args)
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case "23503", "23505":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -50,7 +59,6 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	fmt.Println(req.ID)
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
 
