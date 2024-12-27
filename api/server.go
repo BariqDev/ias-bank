@@ -3,6 +3,8 @@ package api
 import (
 	"github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Server serve http requests for application
@@ -18,10 +20,15 @@ func NewServer(store db.Store) *Server {
 	}
 	router := gin.Default()
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validateCurrency)
+	}
 	// routes
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.ListAccounts)
+
+	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
 	return server

@@ -19,4 +19,7 @@ server:
 		go run main.go
 mock:
 		mockgen -package mockdb  -destination db/mock/store.go  github.com/BariqDev/ias-bank/db/sqlc Store         
+test:
+	go test -v -cover -short ./...
+
 .PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock   server
