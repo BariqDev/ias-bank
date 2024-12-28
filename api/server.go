@@ -24,27 +24,34 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 
 	if err != nil {
-		return nil , fmt.Errorf("cannot create token maker: %w", err)
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 	server := &Server{
-		store: store,
+		store:     store,
 		tokenMker: tokenMaker,
 	}
-	router := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validateCurrency)
 	}
-	// routes
+
+	server.setupRoutes()
+	return server, nil
+
+}
+
+func (server *Server) setupRoutes() {
+	router := gin.Default()
+
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.ListAccounts)
 
 	router.POST("/transfers", server.createTransfer)
 	router.POST("/users", server.createUser)
+	router.POST("/users/login", server.loginUser)
 
 	server.router = router
-	return server,nil
 
 }
 
