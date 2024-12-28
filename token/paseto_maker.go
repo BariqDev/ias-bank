@@ -49,7 +49,9 @@ func (maker *PasetoMaker) VerifyToken(token string) (*Payload, error) {
 		return nil, err
 	}
 	parser := paseto.NewParser()
-
+	parser.AddRule(paseto.NotExpired())
+	parser.AddRule(paseto.ValidAt(time.Now()))
+		
 	pasetoToken, err := parser.ParseV4Local(symmetricKey, token, nil)
 
 	if err != nil {
