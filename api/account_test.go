@@ -1,3 +1,5 @@
+
+
 package api
 
 import (
@@ -79,28 +81,28 @@ func TestGetAccountApi(t *testing.T) {
 		},
 	}
 
-	for i:= range testCases {
+	for i := range testCases {
 		tc := testCases[i]
-		t.Run(tc.name,func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-		
+
 			store := mockdb.NewMockStore(ctrl)
 
-			// build the stubs 
+			// build the stubs
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server := NewTestServer(t, store)
 			recorder := httptest.NewRecorder()
-		
+
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 			server.router.ServeHTTP(recorder, request)
-		
+
 			// check response
 			tc.checkResponse(t, recorder)
-		
+
 		})
 	}
 

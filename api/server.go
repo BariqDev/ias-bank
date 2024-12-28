@@ -1,7 +1,11 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/BariqDev/ias-bank/db/sqlc"
+	"github.com/BariqDev/ias-bank/token"
+	"github.com/BariqDev/ias-bank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -9,14 +13,22 @@ import (
 
 // Server serve http requests for application
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	store     db.Store
+	router    *gin.Engine
+	tokenMker token.Maker
+	config    util.Config
 }
 
 // NewServer creates new http server and setup routing
-func NewServer(store db.Store) *Server {
+func NewServer(config util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+
+	if err != nil {
+		return nil , fmt.Errorf("cannot create token maker: %w", err)
+	}
 	server := &Server{
 		store: store,
+		tokenMker: tokenMaker,
 	}
 	router := gin.Default()
 
@@ -32,7 +44,7 @@ func NewServer(store db.Store) *Server {
 	router.POST("/users", server.createUser)
 
 	server.router = router
-	return server
+	return server,nil
 
 }
 
