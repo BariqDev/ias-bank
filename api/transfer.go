@@ -1,10 +1,12 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
+	"github.com/BariqDev/ias-bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -24,13 +26,21 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	isFromCurrencyMatched := server.validateAccount(ctx, req.FromAccountId, req.Currency)
+	fromAccount,valid := server.validateAccount(ctx, req.FromAccountId, req.Currency)
 
-	if !isFromCurrencyMatched {
+	if !valid {
 		return
 	}
-	isToCurrencyMatched := server.validateAccount(ctx, req.ToAccountId, req.Currency)
-	if !isToCurrencyMatched {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if fromAccount.Owner != authPayload.Username {
+		err := errors.New("from account doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_,valid = server.validateAccount(ctx, req.ToAccountId, req.Currency)
+	if !valid {
 		return
 	}
 
@@ -50,25 +60,25 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currency string) (db.Account, bool) {
 
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 
 		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return  account,false
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account,false
 
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch %s vs %s", accountID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account,false
 	}
-	return true
+	return account, true
 
 }
