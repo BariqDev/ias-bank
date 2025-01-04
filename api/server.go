@@ -29,6 +29,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	server := &Server{
 		store:     store,
 		tokenMker: tokenMaker,
+		config:    config,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -45,7 +46,7 @@ func (server *Server) setupRoutes() {
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
-
+	router.POST("/refresh", server.renewAccessToken)
 	routesGroup := router.Group("/").Use(authMiddleware(server.tokenMker))
 
 	routesGroup.POST("/accounts", server.createAccount)

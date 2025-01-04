@@ -150,6 +150,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	ctx.SetCookie("refresh_token", refreshToken, 1440000, "/", "localhost", false, true)
 	res := loginUserResponse{
 		SessionID: session.ID,
 		AccessToken:           accessToken,
