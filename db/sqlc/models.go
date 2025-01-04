@@ -5,6 +5,7 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -43,7 +44,7 @@ type User struct {
 }
 
 type UserSession struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           uuid.UUID          `json:"id"`
 	Username     string             `json:"username"`
 	RefreshToken string             `json:"refresh_token"`
 	UserAgent    string             `json:"user_agent"`

@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
-	pgtype "github.com/jackc/pgx/v5/pgtype"
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -207,7 +207,7 @@ func (mr *MockStoreMockRecorder) GetEntry(ctx, id any) *gomock.Call {
 }
 
 // GetSession mocks base method.
-func (m *MockStore) GetSession(ctx context.Context, id pgtype.UUID) (db.UserSession, error) {
+func (m *MockStore) GetSession(ctx context.Context, id uuid.UUID) (db.UserSession, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSession", ctx, id)
 	ret0, _ := ret[0].(db.UserSession)

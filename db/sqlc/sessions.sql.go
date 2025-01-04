@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -26,7 +27,7 @@ INSERT INTO user_sessions (
 `
 
 type CreateSessionParams struct {
-	ID           pgtype.UUID        `json:"id"`
+	ID           uuid.UUID          `json:"id"`
 	Username     string             `json:"username"`
 	RefreshToken string             `json:"refresh_token"`
 	UserAgent    string             `json:"user_agent"`
@@ -64,7 +65,7 @@ SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_a
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetSession(ctx context.Context, id pgtype.UUID) (UserSession, error) {
+func (q *Queries) GetSession(ctx context.Context, id uuid.UUID) (UserSession, error) {
 	row := q.db.QueryRow(ctx, getSession, id)
 	var i UserSession
 	err := row.Scan(
