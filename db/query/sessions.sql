@@ -14,3 +14,5 @@ INSERT INTO user_sessions (
 -- name: GetSession :one
 SELECT * FROM user_sessions
 WHERE id = $1 LIMIT 1;
+
+
