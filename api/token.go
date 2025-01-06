@@ -14,7 +14,6 @@ type renewAccessTokenResponse struct {
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
 }
 
-
 func (server *Server) renewAccessToken(ctx *gin.Context) {
 
 	refreshToken, err := ctx.Cookie("refresh_token")
@@ -23,7 +22,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 		return
 
 	}
-	refreshPayload, err := server.tokenMker.VerifyToken(refreshToken)
+	refreshPayload, err := server.tokenMaker.VerifyToken(refreshToken)
 
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
@@ -59,7 +58,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 	}
 
 	// create access token
-	accessToken, accessTokenPayload, err := server.tokenMker.CreateToken(session.Username, server.config.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(session.Username, server.config.AccessTokenDuration)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

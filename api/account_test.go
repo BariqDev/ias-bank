@@ -116,7 +116,7 @@ func TestGetAccountApi(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, server.tokenMker, request)
+			tc.setupAuth(t, server.tokenMaker, request)
 			server.router.ServeHTTP(recorder, request)
 
 			// check response

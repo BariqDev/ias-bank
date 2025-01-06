@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/BariqDev/ias-bank/db/sqlc"
+	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/BariqDev/ias-bank/token"
 	"github.com/BariqDev/ias-bank/util"
 	"github.com/gin-gonic/gin"
@@ -13,10 +13,10 @@ import (
 
 // Server serve http requests for application
 type Server struct {
-	store     db.Store
-	router    *gin.Engine
-	tokenMker token.Maker
-	config    util.Config
+	store      db.Store
+	router     *gin.Engine
+	tokenMaker token.Maker
+	config     util.Config
 }
 
 // NewServer creates new http server and setup routing
@@ -27,9 +27,9 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 	server := &Server{
-		store:     store,
-		tokenMker: tokenMaker,
-		config:    config,
+		store:      store,
+		tokenMaker: tokenMaker,
+		config:     config,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -47,7 +47,7 @@ func (server *Server) setupRoutes() {
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 	router.POST("/refresh", server.renewAccessToken)
-	routesGroup := router.Group("/").Use(authMiddleware(server.tokenMker))
+	routesGroup := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
 	routesGroup.POST("/accounts", server.createAccount)
 	routesGroup.GET("/accounts/:id", server.getAccount)
