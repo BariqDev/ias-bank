@@ -1,0 +1,15 @@
+syntax ="proto3";
+package pb;
+import "user.proto";
+option go_package = "github.com/BariqDev/ias-bank/pb";
+
+message CreateUserRequest {
+    string Username = 1;
+    string Password = 2;
+    string FullName = 3;
+    string Email = 4;
+}
+ 
+message CreateUserResponse {
+    User User=1;
+}
