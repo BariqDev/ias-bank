@@ -27,10 +27,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		HashedPassword: hashedPassword,
 		FullName:       req.GetFullName(),
 		Email:          req.GetEmail(),
+		
 	}
-	fmt.Println(req.GetUsername())
-	fmt.Println(req.GetEmail())
-	fmt.Println(req.GetFullName())
 
 	user, err := server.store.CreateUser(ctx, args)
 	if err != nil {

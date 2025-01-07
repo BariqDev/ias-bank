@@ -39,6 +39,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	}
 
+	mtd :=server.extractMetaData(ctx)
 	// create refresh token
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(req.Username, server.config.RefreshTokenDuration)
 
@@ -49,8 +50,8 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		ID:           refreshTokenPayload.ID,
 		Username:     refreshTokenPayload.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
+		UserAgent:    mtd.UserAgent,
+		ClientIp:     mtd.ClientIp,
 		IsBlocked:    false,
 		ExpiresAt:    pgtype.Timestamptz{Time: refreshTokenPayload.ExpiredAt, Valid: true},
 	})
