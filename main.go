@@ -47,7 +47,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 	pb.RegisterIASBankServiceServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", config.ServerAddress)
+	listener, err := net.Listen("tcp", config.GrpcServerAddress)
 	if err != nil {
 		log.Fatal("cannot create listener:", err)
 	}
@@ -68,7 +68,7 @@ func runGinServer(config util.Config, store db.Store) {
 		log.Fatal("Cannot create server:", err)
 		os.Exit(1)
 	}
-	err = server.Start(config.ServerAddress)
+	err = server.Start(config.HttpServerAddress)
 	if err != nil {
 		log.Fatal("Cannot start server:", err)
 		os.Exit(1)
