@@ -4,12 +4,15 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
+
 	"github.com/BariqDev/ias-bank/api"
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/BariqDev/ias-bank/gapi"
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -33,6 +36,7 @@ func main() {
 	}
 	store := db.NewStore(testDbPool)
 
+	go runGrpcGatewayServer(config,store)
 	runGrpcServer(config, store)
 }
 
@@ -58,6 +62,38 @@ func runGrpcServer(config util.Config, store db.Store) {
 		log.Fatal("cannot start gRPC server:", err)
 	}
 
+}
+
+func runGrpcGatewayServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+
+	grpcMux := runtime.NewServeMux()
+	ctx,cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = pb.RegisterIASBankServiceHandlerServer(ctx, grpcMux, server)
+
+	if err != nil {
+		log.Fatal("cannot register handler:", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/",grpcMux)
+
+	listener, err := net.Listen("tcp", config.HttpServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener:", err)
+	}
+
+	log.Printf("start HTTP gateway server at %s", listener.Addr().String())
+
+	err = http.Serve(listener, mux)
+	if err != nil {
+		log.Fatal("cannot start gateway:", err)
+	}
 
 }
 

@@ -3,6 +3,8 @@ package gapi
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/BariqDev/ias-bank/pb"
@@ -15,6 +17,7 @@ import (
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 
 	hashedPassword, err := util.HashPassword(req.GetPassword())
+    log.Printf("Received CreateUser request: %+v", req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Failed at hashing password: %s", err)
@@ -25,8 +28,14 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		FullName:       req.GetFullName(),
 		Email:          req.GetEmail(),
 	}
+	fmt.Println(req.GetUsername())
+	fmt.Println(req.GetEmail())
+	fmt.Println(req.GetFullName())
+
 	user, err := server.store.CreateUser(ctx, args)
 	if err != nil {
+		fmt.Println("inside error")
+		fmt.Println(err)
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
