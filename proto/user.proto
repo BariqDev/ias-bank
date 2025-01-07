@@ -5,9 +5,9 @@ option go_package = "github.com/BariqDev/ias-bank/pb";
 import "google/protobuf/timestamp.proto";
 
 message User {
-    string   Username = 1;
-    string FullName = 2;
-    string Email = 3;
-    google.protobuf.Timestamp PasswordChangedAt =4;
-    google.protobuf.Timestamp CreatedAt =5;
+    string   username = 1;
+    string full_name = 2;
+    string email = 3;
+    google.protobuf.Timestamp password_changed_at =4;
+    google.protobuf.Timestamp created_at =5;
 }

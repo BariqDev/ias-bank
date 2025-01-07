@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	}
 	store := db.NewStore(testDbPool)
 
-	go runGrpcGatewayServer(config,store)
+	go runGrpcGatewayServer(config, store)
 	runGrpcServer(config, store)
 }
 
@@ -70,8 +71,17 @@ func runGrpcGatewayServer(config util.Config, store db.Store) {
 		log.Fatal("cannot create server:", err)
 	}
 
-	grpcMux := runtime.NewServeMux()
-	ctx,cancel := context.WithCancel(context.Background())
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+
+	grpcMux := runtime.NewServeMux(jsonOption)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	err = pb.RegisterIASBankServiceHandlerServer(ctx, grpcMux, server)
@@ -81,7 +91,7 @@ func runGrpcGatewayServer(config util.Config, store db.Store) {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/",grpcMux)
+	mux.Handle("/", grpcMux)
 
 	listener, err := net.Listen("tcp", config.HttpServerAddress)
 	if err != nil {
