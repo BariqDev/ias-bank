@@ -11,6 +11,7 @@ type Config struct {
 	HttpServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GrpcServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	MigrationUrl         string `mapstructure:"MIGRATION_URL"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }

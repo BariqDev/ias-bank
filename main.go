@@ -12,6 +12,9 @@ import (
 	"github.com/BariqDev/ias-bank/gapi"
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/golang-migrate/migrate/v4"
+    _ "github.com/golang-migrate/migrate/v4/database/postgres"
+    _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -35,8 +38,9 @@ func main() {
 		log.Fatal("Cannot connect to DB:", err)
 		os.Exit(1)
 	}
+	runDBMigrationUp(config.MigrationUrl, config.DBSource)
+	
 	store := db.NewStore(testDbPool)
-
 	go runGrpcGatewayServer(config, store)
 	runGrpcServer(config, store)
 }
@@ -65,6 +69,18 @@ func runGrpcServer(config util.Config, store db.Store) {
 
 }
 
+func runDBMigrationUp(migrationUrl string, dbSource string) {
+	migration,err := migrate.New(migrationUrl, dbSource)
+
+	if err != nil {
+		log.Fatal("Cannot create migration:", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("Cannot migrate up:", err)
+	}
+	log.Println("Migration up success")
+}
 func runGrpcGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
