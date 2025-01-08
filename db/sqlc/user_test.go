@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,4 +47,73 @@ func TestGetUser(t *testing.T) {
 	require.Equal(t, user1.Email, user2.Email)
 	require.WithinDuration(t, user1.PasswordChangedAt.Time, user2.PasswordChangedAt.Time, time.Second)
 	require.WithinDuration(t, user1.CreatedAt.Time, user2.CreatedAt.Time, time.Second)
+}
+
+func TestUpdateUserOnlyFullName(t *testing.T) {
+	ctx := context.Background()
+	oldUser := createRandomUser(t)
+	newFullName := util.RandomOwner()
+
+	updatedAccount, err := testQueries.UpdateUser(ctx, UpdateUserParams{
+		Username: oldUser.Username,
+		FullName: pgtype.Text{String: newFullName, Valid: true},
+	})
+
+	require.NoError(t,err)
+	require.NotEmpty(t, updatedAccount)
+	require.NotEqual(t, oldUser.FullName, updatedAccount.FullName)
+	require.Equal(t, newFullName, updatedAccount.FullName)
+
+	require.Equal(t,oldUser.Email,updatedAccount.Email)
+	require.Equal(t,oldUser.Username,updatedAccount.Username)
+	require.Equal(t,oldUser.HashedPassword,updatedAccount.HashedPassword)
+
+
+}
+
+func TestUpdateUserOnlyEmail(t *testing.T) {
+	ctx := context.Background()
+	oldUser := createRandomUser(t)
+	newEmail := util.RandomEmail()
+
+	updatedAccount, err := testQueries.UpdateUser(ctx, UpdateUserParams{
+		Username: oldUser.Username,
+		Email: pgtype.Text{String: newEmail, Valid: true},
+	})
+
+	require.NoError(t,err)
+	require.NotEmpty(t, updatedAccount)
+	require.NotEqual(t, oldUser.Email, updatedAccount.Email)
+	require.Equal(t, newEmail, updatedAccount.Email)
+
+	require.Equal(t,oldUser.FullName,updatedAccount.FullName)
+	require.Equal(t,oldUser.Username,updatedAccount.Username)
+	require.Equal(t,oldUser.HashedPassword,updatedAccount.HashedPassword)
+
+
+}
+
+
+func TestUpdateUserOnlyPassword(t *testing.T) {
+	ctx := context.Background()
+	oldUser := createRandomUser(t)
+	newPassoword := util.RandomString(10)
+
+	newHashedPassword,err := util.HashPassword(newPassoword)
+
+	updatedAccount, err := testQueries.UpdateUser(ctx, UpdateUserParams{
+		Username: oldUser.Username,
+		HashedPassword: pgtype.Text{String: newHashedPassword, Valid: true},
+	})
+
+	require.NoError(t,err)
+	require.NotEmpty(t, updatedAccount)
+	require.NotEqual(t, oldUser.HashedPassword, updatedAccount.HashedPassword)
+	require.Equal(t, newHashedPassword, updatedAccount.HashedPassword)
+
+	require.Equal(t,oldUser.FullName,updatedAccount.FullName)
+	require.Equal(t,oldUser.Username,updatedAccount.Username)
+	require.Equal(t,oldUser.Email,updatedAccount.Email)
+
+
 }
