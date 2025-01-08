@@ -6,10 +6,10 @@ option go_package = "github.com/BariqDev/ias-bank/pb";
 message CreateUserRequest {
     string username = 1;
     string password = 2;
-    string fullName = 3;
+    string full_name = 3;
     string email = 4;
 }
  
 message CreateUserResponse {
-    User User=1;
+    User user=1;
 }
