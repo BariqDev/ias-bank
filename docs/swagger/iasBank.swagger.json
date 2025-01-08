@@ -107,7 +107,7 @@
     "pbCreateUserResponse": {
       "type": "object",
       "properties": {
-        "User": {
+        "user": {
           "$ref": "#/definitions/pbUser"
         }
       }
@@ -115,10 +115,10 @@
     "pbLoginUserRequest": {
       "type": "object",
       "properties": {
-        "Username": {
+        "username": {
           "type": "string"
         },
-        "Password": {
+        "password": {
           "type": "string"
         }
       }
@@ -126,7 +126,7 @@
     "pbLoginUserResponse": {
       "type": "object",
       "properties": {
-        "User": {
+        "user": {
           "$ref": "#/definitions/pbUser"
         },
         "sessionId": {
