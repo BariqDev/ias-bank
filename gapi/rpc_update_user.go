@@ -18,16 +18,19 @@ import (
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 
-	violations := server.validateUpdateUser(req)
+	authPayload, err := server.authorizeUser(ctx)
 
+	if err != nil {
+		return nil, UnauthenticatedError(err)
+	}
+
+	violations := server.validateUpdateUser(req)
 	if violations != nil {
-		badRequest := &errdetails.BadRequest{FieldViolations: violations}
-		statusInvalid := status.New(codes.InvalidArgument, "Invalid Argument")
-		statusDetails, err := statusInvalid.WithDetails(badRequest)
-		if err != nil {
-			return nil, statusInvalid.Err()
-		}
-		return nil, statusDetails.Err()
+		return nil, invalidArgument(violations)
+	}
+
+	if authPayload.Username != req.GetUsername() {
+		return nil, status.Error(codes.PermissionDenied, "You are not allowed to update this user")
 	}
 
 	args := db.UpdateUserParams{
@@ -87,4 +90,19 @@ func (server *Server) validateUpdateUser(req *pb.UpdateUserRequest) []*errdetail
 	}
 
 	return nil
+}
+
+func invalidArgument(violations []*errdetails.BadRequest_FieldViolation) error {
+	badRequest := &errdetails.BadRequest{FieldViolations: violations}
+	statusInvalid := status.New(codes.InvalidArgument, "Invalid Argument")
+	statusDetails, err := statusInvalid.WithDetails(badRequest)
+	if err != nil {
+		return statusInvalid.Err()
+	}
+
+	return statusDetails.Err()
+}
+
+func UnauthenticatedError(err error) error {
+	return status.Errorf(codes.Unauthenticated, "Unauthenticated: %s", err)
 }
