@@ -64,7 +64,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	return res, nil
 }
 
-type user struct {
+type createUserReq struct {
 	Username string `json:"username"  validate:"required,alphanum"`
 	Password string `json:"password" validate:"required,min=6"`
 	FullName string `json:"full_name" validate:"required"`
@@ -73,7 +73,7 @@ type user struct {
 
 func (server *Server) validateCreateUser(req *pb.CreateUserRequest) []*errdetails.BadRequest_FieldViolation {
 
-	user := &user{
+	user := &createUserReq{
 		Username: req.GetUsername(),
 		Password: req.GetPassword(),
 		Email:    req.Email,
