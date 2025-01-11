@@ -85,6 +85,8 @@ func runDBMigrationUp(migrationUrl string, dbSource string) {
 	}
 	log.Info().Msg("Migration up success")
 }
+
+
 func runGrpcGatewayServer(config util.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
@@ -120,7 +122,8 @@ func runGrpcGatewayServer(config util.Config, store db.Store) {
 
 	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
 
-	err = http.Serve(listener, mux)
+	handler := gapi.HttLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot start gateway:")
 	}
