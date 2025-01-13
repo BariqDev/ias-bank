@@ -9,6 +9,7 @@ import (
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/token"
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/BariqDev/ias-bank/worker"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -19,10 +20,11 @@ type Server struct {
 	tokenMaker token.Maker
 	config     util.Config
 	validate   *validator.Validate
+	distributer worker.TaskDistributer
 }
 
 // NewServer creates new http server and setup routing
-func NewServer(config util.Config, store db.Store) (*Server, error) {
+func NewServer(config util.Config, store db.Store, distributer worker.TaskDistributer) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 
 	if err != nil {
@@ -44,6 +46,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		tokenMaker: tokenMaker,
 		config:     config,
 		validate:   validate,
+		distributer: distributer,
 	}
 
 	return server, nil

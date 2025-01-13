@@ -5,11 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/BariqDev/ias-bank/worker"
 	"github.com/go-playground/validator/v10"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -57,6 +60,21 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "Failed at hashing password: %s", err)
 	}
 
+	taskPayload := &worker.PayloadSendVerifyEmail{
+		Username: user.Username,
+	}
+
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+	err = server.distributer.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot distribute task to send email verification: %s", err)
+
+	}
 	res := &pb.CreateUserResponse{
 		User: convertUser(user),
 	}

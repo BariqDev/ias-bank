@@ -22,7 +22,7 @@ type PayloadSendVerifyEmail struct {
 func (distributer *RedisTaskDistributer) DistributeTaskSendVerifyEmail(
 	ctx context.Context,
 	payload *PayloadSendVerifyEmail,
-	options ...asynq.Option) error {
+	options ...asynq.Option,) error {
 
 	jsonPayloadBytes, err := json.Marshal(payload)
 

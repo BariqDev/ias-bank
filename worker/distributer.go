@@ -10,7 +10,7 @@ type TaskDistributer interface {
 	DistributeTaskSendVerifyEmail(
 		ctx context.Context,
 		payload *PayloadSendVerifyEmail,
-		options ...asynq.Option) error
+		options ...asynq.Option,) error
 }
 
 type RedisTaskDistributer struct {

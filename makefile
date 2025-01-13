@@ -30,5 +30,7 @@ proto:
 	--grpc-gateway_out=pb  --grpc-gateway_opt=paths=source_relative \
 	--openapiv2_out=docs/swagger --openapiv2_opt=allow_merge=true,merge_file_name=iasBank \
     proto/*.proto
+redis:
+	docker run --name redis -p 6379:6379 -d redis
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock   server proto
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test server mock   server proto redis

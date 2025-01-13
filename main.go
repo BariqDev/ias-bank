@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/BariqDev/ias-bank/gapi"
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/util"
+	"github.com/BariqDev/ias-bank/worker"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -44,13 +46,20 @@ func main() {
 	runDBMigrationUp(config.MigrationUrl, config.DBSource)
 
 	store := db.NewStore(testDbPool)
-	go runGrpcGatewayServer(config, store)
-	runGrpcServer(config, store)
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisServerAddress,
+	}
+	taskDistributer := worker.NewRedisTaskDistributer(redisOpt)
+
+	go runTaskProcessor(redisOpt,store)
+	go runGrpcGatewayServer(config, store, taskDistributer)
+	runGrpcServer(config, store, taskDistributer)
 }
 
-func runGrpcServer(config util.Config, store db.Store) {
+func runGrpcServer(config util.Config, store db.Store, distributer worker.TaskDistributer) {
 
-	server, err := gapi.NewServer(config, store)
+	server, err := gapi.NewServer(config, store, distributer)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create server:")
 	}
@@ -86,9 +95,18 @@ func runDBMigrationUp(migrationUrl string, dbSource string) {
 	log.Info().Msg("Migration up success")
 }
 
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 
-func runGrpcGatewayServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	log.Info().Msg("Start task processor")
+	err:= taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to start task processor")
+	}
+}
+
+func runGrpcGatewayServer(config util.Config, store db.Store, distributer worker.TaskDistributer) {
+	server, err := gapi.NewServer(config, store, distributer)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create server:")
 	}
