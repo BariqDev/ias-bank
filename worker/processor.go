@@ -5,6 +5,7 @@ import (
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -22,13 +23,23 @@ type RedisTaskProcessor struct {
 	store  db.Store
 }
 
+func reportError(ctx context.Context, task *asynq.Task, err error) {
+	log.Error().Err(err).
+		Str("type", task.Type()).
+		Bytes("payload", task.Payload()).
+		Msg("Process task failed")
+}
+
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcess {
-	server := asynq.NewServer(redisOpt, asynq.Config{
-		Queues: map[string]int{
-			QueueCritical: 10,
-			QueueDefault:  5,
-		},
-	})
+	server := asynq.NewServer(redisOpt,
+		asynq.Config{
+			Queues: map[string]int{
+				QueueCritical: 10,
+				QueueDefault:  5,
+			},
+			ErrorHandler: asynq.ErrorHandlerFunc(reportError),
+			Logger:       NewLogger(),
+		})
 
 	return &RedisTaskProcessor{
 		server: server,
