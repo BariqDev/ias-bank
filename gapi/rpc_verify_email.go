@@ -14,8 +14,9 @@ func (server *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailReques
 
 	violations := server.validateVerifyEmail(req)
 
+	fmt.Printf("violations %#v\n", violations)
 	if violations != nil {
-
+		fmt.Print("inside violations")
 		return nil, invalidArgumentError(violations)
 	}
 
@@ -24,7 +25,7 @@ func (server *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailReques
 		SecretCode: req.GetSecretCode(),
 	})
 	if err != nil {
-		return nil, invalidArgumentError(violations)
+		return nil, err
 
 	}
 	res := &pb.VerifyEmailResponse{
