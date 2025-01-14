@@ -3,12 +3,15 @@ package mail
 import (
 	"testing"
 
+	"github.com/BariqDev/ias-bank/util"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSendEmail(t *testing.T) {
+	config, err := util.LoadConfig("../")
 
-	sender := NewGmailSender("islam said", "contact.islam.said@gmail.com", "ugdcrexwabqdokfm")
+	require.NoError(t, err)
+	sender := NewGmailSender("islam said", config.VerifyEmailAddress, config.VerifyEmailPassword)
 
 	subject := "Test send email"
 	content := `
@@ -19,6 +22,6 @@ func TestSendEmail(t *testing.T) {
 	to := []string{"islam.said.dev@gmail.com"}
 
 	attachedFiles := []string{"../readme.md"}
-	err := sender.SendEmail(subject, content, to, nil, nil, attachedFiles)
+	err = sender.SendEmail(subject, content, to, nil, nil, attachedFiles)
 	require.NoError(t, err)
 }

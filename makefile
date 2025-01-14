@@ -4,6 +4,8 @@ createdb:
 		docker exec -it postgres-17-alpine createdb --username=root --owner=root ias_bank
 dropdb:
 		docker exec -it postgres-17-alpine dropdb ias_bank
+new_migration:
+	migrate create -ext sql -dir db/migrations -seq $(name)
 migrateup:
 		migrate -path db/migrations -database "postgresql://root:secret@localhost:5433/ias_bank?sslmode=disable" -verbose up
 migrateup1:

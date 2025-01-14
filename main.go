@@ -13,6 +13,7 @@ import (
 	"github.com/BariqDev/ias-bank/api"
 	db "github.com/BariqDev/ias-bank/db/sqlc"
 	"github.com/BariqDev/ias-bank/gapi"
+	"github.com/BariqDev/ias-bank/mail"
 	"github.com/BariqDev/ias-bank/pb"
 	"github.com/BariqDev/ias-bank/util"
 	"github.com/BariqDev/ias-bank/worker"
@@ -52,7 +53,7 @@ func main() {
 	}
 	taskDistributer := worker.NewRedisTaskDistributer(redisOpt)
 
-	go runTaskProcessor(redisOpt,store)
+	go runTaskProcessor(redisOpt, store,config)
 	go runGrpcGatewayServer(config, store, taskDistributer)
 	runGrpcServer(config, store, taskDistributer)
 }
@@ -95,11 +96,12 @@ func runDBMigrationUp(migrationUrl string, dbSource string) {
 	log.Info().Msg("Migration up success")
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, config util.Config) {
 
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	mailer := mail.NewGmailSender("ias-bank", config.VerifyEmailAddress, config.VerifyEmailPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("Start task processor")
-	err:= taskProcessor.Start()
+	err := taskProcessor.Start()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to start task processor")
 	}

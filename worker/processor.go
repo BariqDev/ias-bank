@@ -4,6 +4,7 @@ import (
 	"context"
 
 	db "github.com/BariqDev/ias-bank/db/sqlc"
+	"github.com/BariqDev/ias-bank/mail"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -21,6 +22,7 @@ type TaskProcess interface {
 type RedisTaskProcessor struct {
 	server *asynq.Server
 	store  db.Store
+	mailer mail.MailSender
 }
 
 func reportError(ctx context.Context, task *asynq.Task, err error) {
@@ -30,7 +32,7 @@ func reportError(ctx context.Context, task *asynq.Task, err error) {
 		Msg("Process task failed")
 }
 
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcess {
+func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mail.MailSender) TaskProcess {
 	server := asynq.NewServer(redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
@@ -44,6 +46,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 	return &RedisTaskProcessor{
 		server: server,
 		store:  store,
+		mailer: mailer,
 	}
 }
 

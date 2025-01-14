@@ -41,6 +41,7 @@ type User struct {
 	Email             string             `json:"email"`
 	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	IsEmailVerified   bool               `json:"is_email_verified"`
 }
 
 type UserSession struct {
@@ -52,4 +53,14 @@ type UserSession struct {
 	IsBlocked    bool               `json:"is_blocked"`
 	ExpiresAt    pgtype.Timestamptz `json:"expires_at"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type VerifyEmail struct {
+	ID         int64              `json:"id"`
+	Username   string             `json:"username"`
+	Email      string             `json:"email"`
+	SecretCode string             `json:"secret_code"`
+	IsUsed     bool               `json:"is_used"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	ExpiredAt  pgtype.Timestamptz `json:"expired_at"`
 }
