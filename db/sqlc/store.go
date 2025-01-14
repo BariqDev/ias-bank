@@ -11,6 +11,7 @@ type Store interface {
 	Querier
 	TransferTx(ctx context.Context, args TransferTxParams) (TransferTxResult, error)
 	CreateUserTx(ctx context.Context, args CreateUserTxParams) (CreateUserTxResult, error)
+	VerifyEmailTx(ctx context.Context, args VerifyEmailTxParams) (VerifyEmailTxResult, error)
 }
 
 type SQLStore struct {
@@ -25,7 +26,6 @@ func NewStore(pool *pgxpool.Pool) Store {
 		pool:    pool,
 	}
 }
-
 
 // execTx executes function with database transaction
 func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
@@ -48,4 +48,3 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 
 	return tx.Commit(ctx)
 }
-

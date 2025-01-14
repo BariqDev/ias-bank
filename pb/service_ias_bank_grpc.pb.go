@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	IASBankService_CreateUser_FullMethodName = "/pb.IASBankService/CreateUser"
-	IASBankService_UpdateUser_FullMethodName = "/pb.IASBankService/UpdateUser"
-	IASBankService_LoginUser_FullMethodName  = "/pb.IASBankService/LoginUser"
+	IASBankService_CreateUser_FullMethodName  = "/pb.IASBankService/CreateUser"
+	IASBankService_UpdateUser_FullMethodName  = "/pb.IASBankService/UpdateUser"
+	IASBankService_LoginUser_FullMethodName   = "/pb.IASBankService/LoginUser"
+	IASBankService_VerifyEmail_FullMethodName = "/pb.IASBankService/VerifyEmail"
 )
 
 // IASBankServiceClient is the client API for IASBankService service.
@@ -31,6 +32,7 @@ type IASBankServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 }
 
 type iASBankServiceClient struct {
@@ -71,6 +73,16 @@ func (c *iASBankServiceClient) LoginUser(ctx context.Context, in *LoginUserReque
 	return out, nil
 }
 
+func (c *iASBankServiceClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, IASBankService_VerifyEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IASBankServiceServer is the server API for IASBankService service.
 // All implementations must embed UnimplementedIASBankServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type IASBankServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	mustEmbedUnimplementedIASBankServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedIASBankServiceServer) UpdateUser(context.Context, *UpdateUser
 }
 func (UnimplementedIASBankServiceServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
+}
+func (UnimplementedIASBankServiceServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
 }
 func (UnimplementedIASBankServiceServer) mustEmbedUnimplementedIASBankServiceServer() {}
 func (UnimplementedIASBankServiceServer) testEmbeddedByValue()                        {}
@@ -172,6 +188,24 @@ func _IASBankService_LoginUser_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IASBankService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IASBankServiceServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IASBankService_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IASBankServiceServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IASBankService_ServiceDesc is the grpc.ServiceDesc for IASBankService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var IASBankService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginUser",
 			Handler:    _IASBankService_LoginUser_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _IASBankService_VerifyEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
